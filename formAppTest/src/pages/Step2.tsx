@@ -1,5 +1,7 @@
 import { Button, Form, Input, Select } from 'antd'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { fetchCategories } from '../api'
 import { FormLayout } from '../layouts/FormLayout'
 import { useFormStore } from '../store/formStore'
 import { type FormData } from '../types/form'
@@ -11,6 +13,20 @@ export function Step2() {
   const stepState = useFormStore((state) => state.validation.step2)
   const setFormData = useFormStore((state) => state.setFormData)
   const setStepValidation = useFormStore((state) => state.setStepValidation)
+  const { data: categories = [], isLoading, isError } = useQuery({
+    queryKey: ['workplace-categories'],
+    queryFn: fetchCategories,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  
+  const categoryOptions = categories.map((category) => ({
+    value: category,
+    label: category
+      .split('-')
+      .map((part) => part[0].toUpperCase() + part.slice(1))
+      .join(' '),
+  }))
 
   const onFinish = () => {
     setStepValidation('step2', false)
@@ -39,13 +55,14 @@ export function Step2() {
         >
           <Select
             placeholder="Выберите место работы"
-            options={[
-              { value: 'office', label: 'Офис' },
-              { value: 'retail', label: 'Ритейл' },
-              { value: 'factory', label: 'Производство' },
-            ]}
+            options={categoryOptions}
+            loading={isLoading}
+            disabled={isLoading || isError}
           />
         </Form.Item>
+        {isError && (
+          <p className="hint-error">Не удалось загрузить список мест работы. Обновите страницу.</p>
+        )}
 
         <Form.Item
           label="Адрес проживания"

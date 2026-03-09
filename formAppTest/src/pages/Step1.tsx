@@ -1,12 +1,12 @@
 import { Button, Form, Input, Select } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import { PhoneInput } from '../components/PhoneInput'
 import { FormLayout } from '../layouts/FormLayout'
 import { useFormStore } from '../store/formStore'
 import { type FormData } from '../types/form'
 
 export function Step1() {
   const navigate = useNavigate()
-  const [form] = Form.useForm()
   const formData = useFormStore((state) => state.formData)
   const stepState = useFormStore((state) => state.validation.step1)
   const setFormData = useFormStore((state) => state.setFormData)
@@ -24,7 +24,6 @@ export function Step1() {
   return (
     <FormLayout title="Форма 1: Личные данные">
       <Form
-        form={form}
         layout="vertical"
         className="form-grid"
         initialValues={formData}
@@ -37,10 +36,10 @@ export function Step1() {
           name="phone"
           rules={[
             { required: true, message: 'Введите телефон' },
-            { pattern: /^0\d{3}\s?\d{3}\s?\d{3}$/, message: 'Формат: 0XXX XXX XXX' },
+            { pattern: /^0\d{3} \d{3} \d{3}$/, message: 'Формат: 0XXX XXX XXX' },
           ]}
         >
-          <Input placeholder="0XXX XXX XXX" />
+          <PhoneInput />
         </Form.Item>
 
         <Form.Item

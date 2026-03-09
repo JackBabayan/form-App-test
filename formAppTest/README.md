@@ -1,73 +1,53 @@
-# React + TypeScript + Vite
+# React Form Test
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Одностраничное приложение (SPA) с 3 последовательными шагами формы:
 
-Currently, two official plugins are available:
+1. Личные данные
+2. Адрес и место работы
+3. Параметры займа + отправка заявки
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+После успешной отправки показывается модалка с результатом и переходом на первый шаг.
 
-## React Compiler
+## Используемые технологии
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React + TypeScript
+- React Router
+- Ant Design (форма, валидация, UI-компоненты)
+- Zustand (общее состояние формы между шагами)
+- React Query (загрузка и кеширование категорий из API)
 
-## Expanding the ESLint configuration
+## Запуск проекта
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Открыть в браузере адрес из Vite (обычно `http://localhost:5173`).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Проверка функциональности
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Перейти на `/step-1`.
+2. Ввести телефон в формате `0XXX XXX XXX`, имя, фамилию и пол.
+3. Нажать `Далее`.
+4. На шаге 2 выбрать место работы (список загружается из `https://dummyjson.com/products/category-list`) и ввести адрес.
+5. Нажать `Далее`.
+6. На шаге 3 выбрать сумму и срок займа.
+7. Нажать `Подать заявку`.
+8. Проверить модалку:
+   - при успехе: текст поздравления;
+   - при ошибке: `Не удалось отправить заявку. Попробуйте еще раз`.
+
+## Реализовано по ТЗ
+
+- 3 последовательных шага с роутингом `/step-1`, `/step-2`, `/step-3`.
+- Валидация обязательных полей на каждом шаге.
+- Телефон с маской ввода `0XXX XXX XXX`.
+- Данные всех шагов сохраняются в едином store и не теряются при переходах.
+- Загрузка списка "место работы" из API с кешированием.
+- Отправка заявки через `POST /products/add` с `title = firstName + ' ' + lastName`.
+- Финальная модалка после ответа сервера.
+
+## Время выполнения
+
+Примерно **5 часов 30 минут**.

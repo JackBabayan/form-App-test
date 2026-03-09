@@ -1,35 +1,47 @@
-import { Button, Form, Slider } from 'antd'
+import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { Button, Form, Modal, Slider } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import { addProduct } from '../api'
 import { FormLayout } from '../layouts/FormLayout'
 import { useFormStore } from '../store/formStore'
 import { type FormData } from '../types/form'
 
 export function Step3() {
   const navigate = useNavigate()
-  const [form] = Form.useForm()
   const formData = useFormStore((state) => state.formData)
-  const stepState = useFormStore((state) => state.validation.step3)
   const setFormData = useFormStore((state) => state.setFormData)
-  const setStepValidation = useFormStore((state) => state.setStepValidation)
+  const [submitResult, setSubmitResult] = useState<'success' | 'error' | null>(null)
+
+  const submitApplicationMutation = useMutation({
+    mutationFn: addProduct,
+    onSuccess: () => setSubmitResult('success'),
+    onError: () => setSubmitResult('error'),
+  })
 
   const onFinish = () => {
-    setStepValidation('step3', false)
+    submitApplicationMutation.mutate({
+      title: `${formData.firstName} ${formData.lastName}`.trim(),
+    })
   }
 
-  const onFinishFailed = () => {
-    setStepValidation('step3', true)
+  const closeResultModal = () => {
+    const shouldGoToFirstStep = submitResult === 'success'
+    setSubmitResult(null)
+
+    if (shouldGoToFirstStep) {
+      navigate('/step-1')
+    }
   }
 
   return (
     <FormLayout title="Форма 3: Параметры займа">
       <Form
-        form={form}
         layout="vertical"
         className="form-grid"
         initialValues={formData}
         onValuesChange={(changedValues) => setFormData(changedValues as Partial<FormData>)}
         onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
       >
         <Form.Item
           label={`Сумма займа: $${formData.amount}`}
@@ -47,19 +59,40 @@ export function Step3() {
           <Slider min={10} max={30} step={1} />
         </Form.Item>
 
-        {stepState.attemptedSubmit && stepState.hasErrors && (
-          <p className="hint-error">Проверьте параметры перед отправкой.</p>
-        )}
-
         <div className="actions">
           <Button className="btn btn-secondary" type="default" onClick={() => navigate('/step-2')}>
             Назад
           </Button>
-          <Button className="btn btn-primary" type="primary" htmlType="submit">
+
+          <Button
+            className="btn btn-primary"
+            type="primary"
+            htmlType="submit"
+            loading={submitApplicationMutation.isPending}
+          >
             Подать заявку
           </Button>
         </div>
       </Form>
+
+
+      <Modal
+        title={submitResult === 'error' ? 'Ошибка' : 'Заявка отправлена'}
+        open={submitResult !== null}
+        onCancel={closeResultModal}
+        onOk={closeResultModal}
+        okText="Понятно"
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        {submitResult === 'error' ? (
+          <p>Не удалось отправить заявку. Попробуйте еще раз</p>
+        ) : (
+          <p>
+            Поздравляем, {formData.lastName} {formData.firstName}. Вам одобрена {formData.amount}
+            {' '}на {formData.term} дней.
+          </p>
+        )}
+      </Modal>
     </FormLayout>
   )
 }
